@@ -32,7 +32,7 @@ def create_user(user: User):
         result = conn.execute(users.insert().values(new_user)) 
         conn.commit()
 
-        # Obtener solo los datos necesarios
+       
         user_data = conn.execute(users.select().where(users.c.id == result.lastrowid)).first()
         return {"id": user_data.id, "username": user_data.username, "name": user_data.name, "weight": user_data.weight, "date": user_data.date}
     except Exception as e:
@@ -43,19 +43,19 @@ def create_user(user: User):
 @user.get('/users/{id}')
 def get_user(id: str):
     try:
-        # Obtener las claves de la tabla directamente
+        
         user_data = conn.execute(users.select().where(users.c.id == id)).first()
         print(f"user_data type: {type(user_data)}")  # Nuevo print
         if user_data:
             table_columns = users.c.keys()
-            # Convertir el objeto Row a un diccionario de forma más robusta
+            
             user_dict = dict(zip(table_columns, user_data))
-            print(f"user_dict: {user_dict}")  # Nuevo print
+            print(f"user_dict: {user_dict}")  
             return user_dict
         else:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
     except HTTPException as e:
-        # Manejar específicamente la excepción HTTPException con código de estado 404
+        
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     except Exception as e:
         print(f"Error al obtener usuario por ID: {str(e)}")
@@ -67,7 +67,7 @@ def get_user(id: str):
 def delete_user(id: str):
     try:
         conn.execute(users.delete().where(users.c.id == id))
-        print(f"Usuario con ID {id} eliminado exitosamente")  # Nuevo print
+        print(f"Usuario con ID {id} eliminado exitosamente") 
         return Response(status_code=HTTP_204_NO_CONTENT)
     except Exception as e:
         print(f"Error al eliminar usuario: {str(e)}")
@@ -81,7 +81,7 @@ def update_user(id: str, user: User):
         existing_user = conn.execute(users.select().where(users.c.id == id)).first()
 
         if existing_user:
-            # Actualizar solo los campos proporcionados en el cuerpo de la solicitud
+           
             update_data = {}
 
             if user.username:
@@ -95,22 +95,15 @@ def update_user(id: str, user: User):
             if user.date:
                 update_data["date"] = user.date
 
-            # Realizar la actualización en la base de datos
             conn.execute(users.update().values(**update_data).where(users.c.id == id))
-
-            # Obtener los datos actualizados del usuario después de la actualización
             updated_user = conn.execute(users.select().where(users.c.id == id)).first()
 
-            # Convertir el objeto Row a un diccionario para evitar errores de serialización
-           # user_dict = dict(updated_user)
-
-            # Devolver los datos actualizados del usuario en la respuesta
             return {"message " : "Usuario actualizado"}
         else:
-            # Usuario no encontrado, devolver respuesta 404
+            
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
     except HTTPException as e:
-        # Manejar específicamente la excepción HTTPException con código de estado 404
+        
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     except Exception as e:
         print(f"Error updating user: {str(e)}")
